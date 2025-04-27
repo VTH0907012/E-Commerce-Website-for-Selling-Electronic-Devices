@@ -1,128 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import api from "../../utils/api";
-// import { toast, ToastContainer } from "react-toastify";
-// import CategoryModal from "../../components/CategoryModal";
-
-// const CategoryListPage = () => {
-//   const [categories, setCategories] = useState([]);
-//   const [showModal, setShowModal] = useState(false);
-//   const [selectedCategory, setSelectedCategory] = useState(null);
-
-//   const fetchCategories = async () => {
-//     try {
-//       const res = await api.get("/api/categories");
-//       setCategories(res.data);
-//     } catch (error) {
-//       console.error("Lỗi khi lấy danh mục:", error);
-//       toast.error("Lỗi khi lấy danh sách danh mục");
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchCategories();
-//   }, []);
-
-//   const handleDelete = async (id) => {
-//     if (window.confirm("Bạn có chắc muốn xoá danh mục này?")) {
-//       try {
-//         await api.delete(`/api/categories/${id}`);
-//         toast.success("Xoá danh mục thành công");
-//         fetchCategories();
-//       } catch (error) {
-//         toast.error(error?.response?.data?.message || "Xoá thất bại");
-//       }
-//     }
-//   };
-
-//   const handleEdit = (category) => {
-//     setSelectedCategory(category);
-//     setShowModal(true);
-//   };
-
-//   const handleAdd = () => {
-//     setSelectedCategory(null);
-//     setShowModal(true);
-//   };
-
-//   const handleSave = async (data) => {
-//     try {
-//       if (data._id) {
-//         await api.put(`/api/categories/${data._id}`, data);
-//         toast.success("Cập nhật danh mục thành công");
-//       } else {
-//         await api.post("/api/categories", data);
-//         toast.success("Thêm danh mục thành công");
-//       }
-
-//       fetchCategories();
-//       setShowModal(false);
-//     } catch (error) {
-//       console.error("Lỗi khi lưu danh mục:", error);
-//       toast.error("Lưu danh mục thất bại");
-//     }
-//   };
-
-//   return (
-//     <div className="p-4  mx-auto">
-//       <div className="flex justify-between items-center mb-6">
-//         <h1 className="text-2xl font-bold">Quản lý Danh mục</h1>
-//         <button
-//           onClick={handleAdd}
-//           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-//         >
-//           + Thêm danh mục
-//         </button>
-//       </div>
-//       <hr className="border-t border-gray-600 opacity-50 mb-4" />
-//       <table className="w-full border border-gray-200 shadow-sm rounded bg-white-50">
-//         <thead className="bg-gray-300">
-//           <tr>
-//             <th className="text-left px-4 py-2 border-b">Hình</th>
-//             <th className="text-left px-4 py-2 border-b">Tên danh mục</th>
-//             <th className="text-center px-4 py-2 border-b w-40">Hành động</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {categories.map((cat) => (
-//             <tr key={cat._id} className="hover:bg-gray-50">
-//               <td className="px-4 py-2 border-b">
-//                 <img
-//                   src={`data:image/png;base64,${cat.icon}`}
-//                   alt={cat.name}
-//                   className="w-10 h-10 object-contain"
-//                 />
-//               </td>
-//               <td className="px-4 py-2 border-b">{cat.name}</td>
-//               <td className="px-4 py-2 border-b text-center space-x-2">
-//                 <button
-//                   onClick={() => handleEdit(cat)}
-//                   className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded"
-//                 >
-//                   Sửa
-//                 </button>
-//                 <button
-//                   onClick={() => handleDelete(cat._id)}
-//                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-//                 >
-//                   Xoá
-//                 </button>
-//               </td>
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-
-//       <CategoryModal
-//         isOpen={showModal}
-//         closeModal={() => setShowModal(false)}
-//         category={selectedCategory}
-//         onSave={handleSave}
-//       />
-
-//       <ToastContainer position="top-right" autoClose={2000} />
-//     </div>
-//   );
-// };
 import React, { useEffect, useState } from "react";
 import {
   getAllCategories,
@@ -132,6 +7,7 @@ import {
 } from "../../service/categoryApi";
 import { toast } from "react-toastify";
 import CategoryModal from "../../components/CategoryModal";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal"; // Import ConfirmDeleteModal
 
 const ITEMS_PER_PAGE = 8;
 
@@ -140,6 +16,8 @@ const CategoryListPage = () => {
   const [selected, setSelected] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // State for delete confirmation modal
+  const [categoryToDelete, setCategoryToDelete] = useState(null); // Store category to delete
 
   const fetchCategories = async () => {
     try {
@@ -147,7 +25,6 @@ const CategoryListPage = () => {
       setCategories(res.data);
     } catch (error) {
       console.log(error);
-      
       toast.error("Lỗi khi lấy danh sách danh mục");
     }
   };
@@ -156,15 +33,15 @@ const CategoryListPage = () => {
     fetchCategories();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xoá danh mục này không?")) {
+  const handleDeleteConfirmation = async () => {
+    if (categoryToDelete) {
       try {
-        await deleteCategory(id);
+        await deleteCategory(categoryToDelete._id);
         toast.success("Xoá danh mục thành công");
         fetchCategories();
+        setShowDeleteModal(false); // Close the modal after deletion
       } catch (error) {
         console.log(error);
-
         toast.error("Xoá danh mục thất bại");
       }
     }
@@ -183,7 +60,6 @@ const CategoryListPage = () => {
       setOpenModal(false);
     } catch (error) {
       console.log(error);
-
       toast.error("Lưu danh mục thất bại");
     }
   };
@@ -213,7 +89,7 @@ const CategoryListPage = () => {
           + Thêm danh mục
         </button>
       </div>
-          <hr className="mb-3"/>
+      <hr className="mb-3" />
       <div className="overflow-x-auto bg-white rounded-lg shadow-md">
         <table className="min-w-full text-sm text-left">
           <thead className="bg-blue-50 text-gray-700 font-medium">
@@ -248,7 +124,10 @@ const CategoryListPage = () => {
                     Sửa
                   </button>
                   <button
-                    onClick={() => handleDelete(cat._id)}
+                    onClick={() => {
+                      setCategoryToDelete(cat); // Set the category to delete
+                      setShowDeleteModal(true); // Show the delete confirmation modal
+                    }}
                     className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow"
                   >
                     Xoá
@@ -279,12 +158,23 @@ const CategoryListPage = () => {
         </div>
       )}
 
+      {/* Category Modal */}
       {openModal && (
         <CategoryModal
           isOpen={openModal}
           closeModal={() => setOpenModal(false)}
           category={selected}
           onSave={handleSave}
+        />
+      )}
+
+      {/* Confirm Delete Modal */}
+      {showDeleteModal && (
+        <ConfirmDeleteModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDeleteConfirmation}
+          content="Bạn có chắc chắn muốn xoá danh mục này không?"
         />
       )}
     </div>

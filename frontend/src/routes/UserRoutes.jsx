@@ -43,6 +43,11 @@ const RequireUserAuth = () => {
   const token = useSelector((state) => state.user?.userInfo?.token);
   return token ? <Outlet /> : <Navigate to="/login" replace />;
 };
+// Component bảo vệ route đăng nhập khi người dùng đã đăng nhập rồi thì không vào được trang login
+const PreventLoggedInUser = () => {
+  const token = useSelector((state) => state.user?.userInfo?.token);
+  return token ? <Navigate to="/checkout" replace /> : <Outlet />;
+};
 
 const UserRoutes = () => {
   return (
@@ -56,15 +61,20 @@ const UserRoutes = () => {
         <Route path="blogs/:id" element={<BlogsDetailPage />} />
 
         {/* Đăng nhập */}
-        <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
+        {/* <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} /> */}
+
+        {/* Đăng nhập, bảo vệ route tránh người dùng đã đăng nhập vào lại trang login */}
+        <Route element={<PreventLoggedInUser />}>
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+        </Route>
 
         {/* Bảo vệ route checkout (đăng nhập mới vào được) */}
         <Route element={<RequireUserAuth />}>
           <Route path="checkout" element={<CheckoutPage />} />
           <Route path="order-history" element={<OrderHistoryPage />} />
           <Route path="profile" element={<ProfilePage />} />
-
         </Route>
 
         {/* Redirect cho route không xác định */}

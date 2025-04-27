@@ -8,6 +8,7 @@ import {
 } from "../../service/userApi";
 import { toast } from "react-toastify";
 import UserModal from "../../components/UserModal";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal"; // Import the ConfirmDeleteModal
 
 const ITEMS_PER_PAGE = 8;
 
@@ -16,6 +17,8 @@ const UserListPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false); // Manage delete modal visibility
+  const [userToDelete, setUserToDelete] = useState(null); // Track the user to delete
 
   const fetchUsers = async () => {
     try {
@@ -31,15 +34,16 @@ const UserListPage = () => {
     fetchUsers();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc muốn xoá người dùng này?")) {
-      try {
-        await deleteUser(id);
+  const handleDelete = async () => {
+    try {
+      if (userToDelete) {
+        await deleteUser(userToDelete._id);
         toast.success("Xoá người dùng thành công");
         fetchUsers();
-      } catch (error) {
-        toast.error(error?.response?.data?.message || "Xoá thất bại");
+        setDeleteModalOpen(false); // Close the delete modal after action
       }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Xoá thất bại");
     }
   };
 
@@ -138,7 +142,10 @@ const UserListPage = () => {
                     Sửa
                   </button>
                   <button
-                    onClick={() => handleDelete(u._id)}
+                    onClick={() => {
+                      setUserToDelete(u); // Set user to delete
+                      setDeleteModalOpen(true); // Open the delete modal
+                    }}
                     className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow"
                   >
                     Xoá
@@ -186,6 +193,14 @@ const UserListPage = () => {
           onSave={handleSave}
         />
       )}
+
+      {/* ConfirmDeleteModal integration */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        content="Bạn có chắc chắn muốn xoá người dùng này?"
+      />
     </div>
   );
 };

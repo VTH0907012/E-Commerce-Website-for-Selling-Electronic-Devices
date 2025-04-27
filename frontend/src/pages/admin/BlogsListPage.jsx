@@ -4,10 +4,10 @@ import {
   createNews,
   updateNews,
   deleteNews,
-  
 } from "../../service/blogApi";
 import { toast } from "react-toastify";
 import NewsModal from "../../components/BlogsModal";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";  // Import modal xác nhận
 
 const ITEMS_PER_PAGE = 8;
 
@@ -15,39 +15,39 @@ const BlogsListPage = () => {
   const [newsList, setNewsList] = useState([]);
   const [selected, setSelected] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [openConfirmDeleteModal, setOpenConfirmDeleteModal] = useState(false);  // State điều khiển modal xác nhận
   const [currentPage, setCurrentPage] = useState(1);
+  const [newsToDelete, setNewsToDelete] = useState(null);  // State lưu trữ tin tức cần xoá
 
   const fetchNews = async () => {
     try {
       const res = await getAllNews();
-  
-      // Giả sử response trả về trực tiếp là mảng
       if (Array.isArray(res)) {
         setNewsList(res);
-      } 
-      // Nếu response dạng { data: [...] }
-      else if (res && Array.isArray(res.data)) {
+      } else if (res && Array.isArray(res.data)) {
         setNewsList(res.data);
-      } 
-      // Nếu không hợp lệ, set về mảng rỗng
-      else {
+      } else {
         setNewsList([]);
       }
-  
     } catch (error) {
       console.log(error);
       toast.error("Lỗi khi lấy danh sách tin tức");
     }
   };
-  
+
   useEffect(() => {
     fetchNews();
   }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xoá tin này không?")) {
+    setNewsToDelete(id);  // Lưu trữ tin tức cần xoá
+    setOpenConfirmDeleteModal(true);  // Mở modal xác nhận
+  };
+
+  const confirmDelete = async () => {
+    if (newsToDelete) {
       try {
-        await deleteNews(id);
+        await deleteNews(newsToDelete);
         toast.success("Xoá tin tức thành công");
         fetchNews();
       } catch (error) {
@@ -136,7 +136,7 @@ const BlogsListPage = () => {
                     Sửa
                   </button>
                   <button
-                    onClick={() => handleDelete(news._id)}
+                    onClick={() => handleDelete(news._id)}  // Gọi handleDelete khi nhấn xoá
                     className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow"
                   >
                     Xoá
@@ -175,6 +175,14 @@ const BlogsListPage = () => {
           onSave={handleSave}
         />
       )}
+
+      {/* Modal xác nhận xóa */}
+      <ConfirmDeleteModal
+        isOpen={openConfirmDeleteModal}
+        onClose={() => setOpenConfirmDeleteModal(false)}
+        onConfirm={confirmDelete}
+        content="Bạn có chắc chắn muốn xoá tin tức này không?"
+      />
     </div>
   );
 };

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { getAllOrders, deleteOrder, updateOrder } from "../../service/cartApi"; // bạn cần tạo file này
+import { getAllOrders, deleteOrder, updateOrder } from "../../service/cartApi";
 import { toast } from "react-toastify";
 import UpdateOrderStatusModal from "../../components/UpdateOrderStatusModal"; // import modal mới
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal"; // Import ConfirmDeleteModal
 
 const ITEMS_PER_PAGE = 8;
 
@@ -12,7 +13,6 @@ const OrderListPage = () => {
   const fetchOrders = async () => {
     try {
       const res = await getAllOrders();
-      //setOrders(res.data);
       setOrders(res.orders); // ✅ chỉ định đúng mảng đơn hàng
     } catch (error) {
       console.error("Lỗi khi lấy danh sách đơn hàng:", error);
@@ -24,15 +24,15 @@ const OrderListPage = () => {
     fetchOrders();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xoá đơn hàng này không?")) {
+  const handleDeleteConfirmation = async () => {
+    if (selectedOrderToDelete) {
       try {
-        await deleteOrder(id);
+        await deleteOrder(selectedOrderToDelete._id);
         toast.success("Đã xoá đơn hàng");
         fetchOrders();
+        setShowDeleteModal(false); // Close the modal after deletion
       } catch (error) {
         console.log(error);
-
         toast.error("Xoá thất bại");
       }
     }
@@ -48,6 +48,9 @@ const OrderListPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // State for delete confirmation modal
+  const [selectedOrderToDelete, setSelectedOrderToDelete] = useState(null); // Store order to delete
+
   const handleOpenModal = (order) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
@@ -57,7 +60,7 @@ const OrderListPage = () => {
     try {
       const body = {
         status: data.status
-      }      
+      };
       await updateOrder(data._id, body); // gọi API cập nhật trạng thái
       toast.success("Đã cập nhật trạng thái");
       fetchOrders();
@@ -66,12 +69,11 @@ const OrderListPage = () => {
       toast.error("Lỗi khi cập nhật");
     }
   };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">
-          Quản lý Đơn hàng
-        </h1>
+        <h1 className="text-2xl font-semibold text-gray-800">Quản lý Đơn hàng</h1>
       </div>
       <hr className="mb-3" />
 
@@ -109,7 +111,6 @@ const OrderListPage = () => {
                   </span>
                 </td>
                 <td className="px-4 py-2 text-center space-x-2">
-                  {/* Bạn có thể thêm nút xem chi tiết nếu muốn */}
                   <button
                     onClick={() => handleOpenModal(order)}
                     className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded shadow"
@@ -117,7 +118,10 @@ const OrderListPage = () => {
                     Cập nhật
                   </button>
                   <button
-                    onClick={() => handleDelete(order._id)}
+                    onClick={() => {
+                      setSelectedOrderToDelete(order); // Set the order to delete
+                      setShowDeleteModal(true); // Show the delete confirmation modal
+                    }}
                     className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow"
                   >
                     Xoá
@@ -127,12 +131,25 @@ const OrderListPage = () => {
             ))}
           </tbody>
         </table>
+
+        {/* Update Order Status Modal */}
         <UpdateOrderStatusModal
           isOpen={isModalOpen}
           closeModal={() => setIsModalOpen(false)}
           order={selectedOrder}
           onSave={handleSaveStatus}
         />
+
+        {/* Confirm Delete Modal */}
+        {showDeleteModal && (
+          <ConfirmDeleteModal
+            isOpen={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            onConfirm={handleDeleteConfirmation}
+            content="Bạn có chắc chắn muốn xoá hoá đơn này không?"
+
+          />
+        )}
       </div>
 
       {totalPages > 1 && (

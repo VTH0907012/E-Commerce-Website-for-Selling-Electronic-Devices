@@ -6,9 +6,9 @@ exports.createProduct = async (req, res) => {
     const { name, description, price, category, brand, quantity, image } = req.body;
     const product = new Product({ name, description, price, category, brand, quantity, image });
     await product.save();
-    res.status(201).json({ message: 'Product created successfully', product });
+    res.status(201).json({ message: 'Sản phẩm đã được tạo thành công', product });
   } catch (error) {
-    res.status(500).json({ message: 'Error creating product', error });
+    res.status(500).json({ message: 'Lỗi khi tạo sản phẩm', error });
   }
 };
 
@@ -18,9 +18,9 @@ exports.updateProduct = async (req, res) => {
     const { productId } = req.params;
     const updatedData = req.body;
     const updatedProduct = await Product.findByIdAndUpdate(productId, updatedData, { new: true });
-    res.status(200).json({ message: 'Product updated successfully', product: updatedProduct });
+    res.status(200).json({ message: 'Sản phẩm được cập nhật thành công', product: updatedProduct });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating product', error });
+    res.status(500).json({ message: 'Lỗi khi cập nhật', error });
   }
 };
 
@@ -31,7 +31,7 @@ exports.getAllProducts = async (req, res) => {
     //const products = await Product.find();
     res.status(200).json(products);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching products', error });
+    res.status(500).json({ message: 'Lỗi khi lấy danh sách sản phẩm', error });
   }
 };
 
@@ -42,7 +42,7 @@ exports.getProductById = async (req, res) => {
     const product = await Product.findById(productId).populate('category brand');
     res.status(200).json(product);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching product', error });
+    res.status(500).json({ message: 'Lỗi khi lấy sản phẩm', error });
   }
 };
 
@@ -51,9 +51,9 @@ exports.deleteProduct = async (req, res) => {
   try {
     const { productId } = req.params;
     await Product.findByIdAndDelete(productId);
-    res.status(200).json({ message: 'Product deleted successfully' });
+    res.status(200).json({ message: 'Sản phẩm đã được xoá thành công' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting product', error });
+    res.status(500).json({ message: 'Lỗi khi xoá sản phẩm', error });
   }
 };
 

@@ -7,7 +7,7 @@ const register = async (req, res) => {
     const { name, email, password } = req.body;
 
     const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ message: 'Email already exists' });
+    if (existing) return res.status(400).json({ message: 'Email đã tồn tại' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -19,9 +19,9 @@ const register = async (req, res) => {
 
     await newUser.save();
 
-    res.status(201).json({ message: 'Registered successfully' });
+    res.status(201).json({ message: 'Đã đăng ký thành công' });
   } catch (err) {
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+    res.status(500).json({ message: 'Đã xảy ra lỗi', error: err.message });
   }
 };
 
@@ -59,7 +59,7 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
 
     // Kiểm tra nếu tài khoản bị khoá
     if (user.isBlocked) {
@@ -67,7 +67,7 @@ const login = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+    if (!isMatch) return res.status(401).json({ message: "Thông tin đăng nhập không hợp lệ" });
 
     const token = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin },
@@ -85,7 +85,7 @@ const login = async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({ message: "Login failed", error: err.message });
+    res.status(500).json({ message: "Đăng nhập thất bại", error: err.message });
   }
 };
 
@@ -101,7 +101,7 @@ const updateUser = async (req, res) => {
     const updated = await User.findByIdAndUpdate(req.params.id, updates, { new: true });
     res.json(updated);
   } catch (err) {
-    res.status(500).json({ message: 'Update failed', error: err.message });
+    res.status(500).json({ message: 'Cập nhật thất bại', error: err.message });
   }
 };
 
@@ -146,9 +146,9 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
-    res.json({ message: 'User deleted' });
+    res.json({ message: 'Người dùng đã được xóa' });
   } catch (err) {
-    res.status(500).json({ message: 'Delete failed', error: err.message });
+    res.status(500).json({ message: 'Xoá thất bại', error: err.message });
   }
 };
 
@@ -156,14 +156,14 @@ const deleteUser = async (req, res) => {
 const toggleBlockUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
 
     user.isBlocked = !user.isBlocked;
     await user.save();
 
-    res.json({ message: `User has been ${user.isBlocked ? 'blocked' : 'unblocked'}` });
+    res.json({ message: `Người dùng đã bị ${user.isBlocked ? 'chặn' : 'bỏ chặn'}` });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to toggle block', error: err.message });
+    res.status(500).json({ message: 'Không thể chuyển đổi trạng thái chặn', error: err.message });
   }
 };
 
@@ -171,14 +171,14 @@ const toggleBlockUser = async (req, res) => {
 const toggleAdmin = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
 
     user.isAdmin = !user.isAdmin;
     await user.save();
 
-    res.json({ message: `User is now ${user.isAdmin ? 'an Admin' : 'a regular user'}` });
+    res.json({ message: `Người dùng hiện tại là ${user.isAdmin ? 'quản trị viên' : 'người dùng thông thường'}` });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to toggle admin', error: err.message });
+    res.status(500).json({ message: 'Không thể chuyển đổi trạng thái quản trị viên', error: err.message });
   }
 };
 
@@ -188,7 +188,7 @@ const getAllUsers = async (req, res) => {
     const users = await User.find();
     res.json(users);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch users', error: err.message });
+    res.status(500).json({ message: 'Không thể lấy danh sách người dùng', error: err.message });
   }
 };
 const getUser = async (req, res) => {

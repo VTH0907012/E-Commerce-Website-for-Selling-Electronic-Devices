@@ -25,7 +25,7 @@ const getAllBrands = async (req, res) => {
 const getBrandById = async (req, res) => {
   try {
     const brand = await Brand.findById(req.params.id);
-    if (!brand) return res.status(404).json({ error: 'Brand not found' });
+    if (!brand) return res.status(404).json({ error: 'Nhãn hiệu không tìm thấy' });
     res.json(brand);
   } catch (err) {
     res.status(500).json({ error: err.message });

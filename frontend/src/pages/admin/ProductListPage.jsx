@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ProductModal from "../../components/ProductModal";
 import { getAllProducts, deleteProduct } from "../../service/productApi";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal"; // Import the ConfirmDeleteModal
 
 const ITEMS_PER_PAGE = 8;
 
@@ -9,16 +10,23 @@ const ProductListPage = () => {
   const [selected, setSelected] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false); // Manage the delete modal visibility
+  const [productToDelete, setProductToDelete] = useState(null); // Store the product to delete
 
   const fetchProducts = async () => {
     const res = await getAllProducts();
     setProducts(res);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xoá sản phẩm này không?")) {
-      await deleteProduct(id);
-      fetchProducts();
+  const handleDelete = (product) => {
+    setProductToDelete(product); // Set the product to be deleted
+    setDeleteModalOpen(true); // Open the delete confirmation modal
+  };
+
+  const confirmDelete = async () => {
+    if (productToDelete) {
+      await deleteProduct(productToDelete._id); // Delete the product
+      fetchProducts(); // Fetch products again after deletion
     }
   };
 
@@ -40,9 +48,7 @@ const ProductListPage = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">
-          Quản lý sản phẩm
-        </h1>
+        <h1 className="text-2xl font-semibold text-gray-800">Quản lý sản phẩm</h1>
         <button
           className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded shadow"
           onClick={() => {
@@ -53,7 +59,7 @@ const ProductListPage = () => {
           + Thêm sản phẩm
         </button>
       </div>
-      <hr className="mb-3"/>
+      <hr className="mb-3" />
 
       <div className="overflow-x-auto bg-white rounded-lg shadow-md">
         <table className="min-w-full text-sm text-left">
@@ -70,10 +76,7 @@ const ProductListPage = () => {
           </thead>
           <tbody>
             {paginatedProducts.map((p) => (
-              <tr
-                key={p._id}
-                className="border-b hover:bg-gray-50 transition duration-150"
-              >
+              <tr key={p._id} className="border-b hover:bg-gray-50 transition duration-150">
                 <td className="px-4 py-2">
                   <img
                     src={`data:image/png;base64,${p.image}`}
@@ -82,9 +85,7 @@ const ProductListPage = () => {
                   />
                 </td>
                 <td className="px-4 py-2">{p.name}</td>
-                <td className="px-4 py-2 text-red-600 font-semibold">
-                  {p.price.toLocaleString()}₫
-                </td>
+                <td className="px-4 py-2 text-red-600 font-semibold">{p.price.toLocaleString()}₫</td>
                 <td className="px-4 py-2">{p.quantity}</td>
                 <td className="px-4 py-2">{p.category?.name}</td>
                 <td className="px-4 py-2">{p.brand?.name}</td>
@@ -99,7 +100,7 @@ const ProductListPage = () => {
                     Sửa
                   </button>
                   <button
-                    onClick={() => handleDelete(p._id)}
+                    onClick={() => handleDelete(p)}
                     className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow"
                   >
                     Xoá
@@ -119,9 +120,7 @@ const ProductListPage = () => {
               key={i}
               onClick={() => handlePageChange(i + 1)}
               className={`px-3 py-1 rounded ${
-                currentPage === i + 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
+                currentPage === i + 1 ? "bg-blue-600 text-white" : "bg-gray-200 hover:bg-gray-300"
               }`}
             >
               {i + 1}
@@ -139,6 +138,14 @@ const ProductListPage = () => {
           }}
         />
       )}
+
+      {/* Confirm delete modal */}
+      <ConfirmDeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        content="Bạn có chắc chắn muốn xoá sản phẩm này không?"
+      />
     </div>
   );
 };

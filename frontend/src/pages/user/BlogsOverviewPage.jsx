@@ -25,7 +25,7 @@ const BlogsOverviewPage = () => {
   }, []);
 
   if (!newsList.length) {
-    return <div className="p-6">Đang tải tin tức...</div>;
+    return <div className="p-6 text-center text-xl">Đang tải tin tức...</div>;
   }
 
   // Tách phần bài viết đầu tiên và phần còn lại
@@ -40,29 +40,28 @@ const BlogsOverviewPage = () => {
   const totalPages = Math.ceil(restItems.length / ITEMS_PER_PAGE);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Tin tức mới nhất:</h1>
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-4xl font-extrabold mb-8 text-gray-900">Tin tức mới nhất:</h1>
 
       {/* Bài viết nổi bật */}
-      <div className="mb-12 bg-white rounded-lg shadow overflow-hidden">
-        <Link to={`/blogs/${featured._id}`} className="block hover:opacity-90 transition">
+      <div className="mb-12 bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+        <Link to={`/blogs/${featured._id}`} className="block hover:opacity-90 transition duration-300">
           {featured.image && (
             <img
-              src={`data:image/png;base64,${featured.image}`} // Cập nhật lại cú pháp cho src
+              src={`data:image/png;base64,${featured.image}`}
               alt={featured.title}
-              className="w-full h-64 object-cover"
+              className="w-full h-72 object-cover transition-transform duration-500 hover:scale-105"
             />
           )}
           <div className="p-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-              {featured.title}
-            </h2>
-            <p className="text-gray-600">
+            <h2 className="text-3xl font-semibold text-gray-800 mb-4">{featured.title}</h2>
+            <p className="text-lg text-gray-600">
               {featured.content.substring(0, 200)}...
             </p>
           </div>
         </Link>
       </div>
+
       <hr className="my-8 border-t-2 border-gray-300" />
 
       {/* Danh sách tin nhỏ */}
@@ -70,18 +69,18 @@ const BlogsOverviewPage = () => {
         {paginatedRest.map((item) => (
           <Link
             key={item._id}
-            to={`/blogs/${item._id}`}  // Cập nhật lại cú pháp cho src
-            className="flex bg-white rounded-lg shadow hover:shadow-md transition overflow-hidden"
+            to={`/blogs/${item._id}`}
+            className="flex bg-white rounded-lg shadow-lg hover:shadow-2xl transition duration-300 overflow-hidden"
           >
             {item.image && (
               <img
-                src={`data:image/png;base64,${item.image}`} // Cập nhật lại cú pháp cho src
+                src={`data:image/png;base64,${item.image}`}
                 alt={item.title}
-                className="w-40 h-24 object-cover"
+                className="w-40 h-24 object-cover transition-transform duration-300 hover:scale-105"
               />
             )}
             <div className="p-4 flex-1">
-              <h3 className="text-xl font-medium text-gray-800 hover:text-blue-600 mb-1">
+              <h3 className="text-xl font-medium text-gray-800 hover:text-blue-600 mb-2 transition duration-200">
                 {item.title}
               </h3>
               <div className="text-sm text-gray-500 mb-2">
@@ -103,9 +102,9 @@ const BlogsOverviewPage = () => {
             <button
               key={idx}
               onClick={() => setCurrentPage(idx + 1)}
-              className={`px-3 py-1 rounded ${
+              className={`px-4 py-2 rounded-md text-lg ${
                 currentPage === idx + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'
-              }`}
+              } transition duration-200`}
             >
               {idx + 1}
             </button>

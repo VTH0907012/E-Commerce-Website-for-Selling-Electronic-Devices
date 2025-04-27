@@ -29,7 +29,7 @@ exports.getAllBlogs = async (req, res) => {
 exports.getBlogById = async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id).populate('author', 'name email');
-    if (!blog) return res.status(404).json({ message: 'Blog not found' });
+    if (!blog) return res.status(404).json({ message: 'Blog không tìm thấy' });
     res.json(blog);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -52,7 +52,7 @@ exports.updateBlog = async (req, res) => {
 exports.deleteBlog = async (req, res) => {
   try {
     await Blog.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Blog deleted' });
+    res.json({ message: 'Blog đã được xoá' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
